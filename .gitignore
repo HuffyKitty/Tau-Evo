@@ -27,3 +27,10 @@ website/.astro/
 .firecrawl/
 # Local scratch tooling
 scripts/analyze_session.py
+
+# Local credentials and Evo experiment artifacts
+API_KEY.txt
+.env
+.env.*
+!.env.example
+.tau-evo/
