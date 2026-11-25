@@ -19,6 +19,7 @@ permissions: {}
 
 jobs:
   build:
+    if: github.repository == 'huggingface/tau'
     permissions:
       contents: read
     runs-on: ubuntu-latest
