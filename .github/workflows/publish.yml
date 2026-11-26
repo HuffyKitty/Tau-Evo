@@ -10,6 +10,7 @@ permissions: {}
 
 jobs:
   publish:
+    if: github.repository == 'huggingface/tau'
     permissions:
       contents: read
       id-token: write

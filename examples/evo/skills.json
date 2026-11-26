@@ -1,0 +1,16 @@
+{
+  "schema_version": 1,
+  "skills": [
+    {
+      "schema_version": 1,
+      "id": "python-boundaries",
+      "revision": 1,
+      "scope": "topic",
+      "triggers": ["python", "Python", "边界"],
+      "body": "Read the implementation before editing. Check empty inputs, negative values, and fractional results when relevant. Make a focused change and report what was actually verified.",
+      "evidence": [],
+      "author": "human-example"
+    }
+  ]
+}
+
