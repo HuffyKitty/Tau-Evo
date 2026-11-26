@@ -39,3 +39,22 @@ The human-authored fixture snapshot was
 Raw transcripts and credentials are local ignored artifacts. No API key or local
 user path is included in this report.
 
+## Regression validation and integration
+
+The initial implementation's [complete Linux CI run](https://github.com/HuffyKitty/Tau-Evo/actions/runs/45639210553)
+passed 2,260 tests with three skips, full Ruff checks, formatting, mypy, and the
+website type/build/test checks. The [Evo matrix](https://github.com/HuffyKitty/Tau-Evo/actions/runs/45639210297)
+passed on both Windows and Linux. A final audit regression preserves provider
+usage when a later tool is interrupted; the local Evo suite now has 15 passing tests.
+
+On the development Windows machine, the full upstream test run encountered
+existing failures and stopped advancing at 92%; it was terminated after an
+extended stall. The previous Windows baseline and known platform problems remain
+documented in the design plan. This incomplete run is not reported as passing.
+Local website type checking and build passed; its route test still assumes POSIX
+path separators. The same website checks pass in Linux CI.
+
+The upstream documentation deployment and PyPI publication workflows now run only
+for the original upstream repository. This fork retains ordinary build/test CI
+and does not automatically publish the upstream package name or site.
+

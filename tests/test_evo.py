@@ -427,3 +427,52 @@ async def test_unknown_verifier_and_spawn_error_are_not_success(tmp_path: Path) 
         tools=[],
     )
     assert record.status == "completed" and record.feedback is None
+
+
+@pytest.mark.anyio
+async def test_interrupted_tool_retains_completed_response_usage(tmp_path: Path) -> None:
+    from tau_agent.messages import Usage
+    from tau_agent.tools import AgentTool, AgentToolResult
+
+    started = asyncio.Event()
+
+    async def wait_tool(*args: object, **kwargs: object) -> AgentToolResult:
+        started.set()
+        await asyncio.sleep(30)
+        return AgentToolResult(content="done")
+
+    provider = fake(
+        AssistantMessage(
+            content=[ToolCall(id="wait", name="wait", arguments={})],
+            stop_reason="toolUse",
+            usage=Usage(total_tokens=17),
+        )
+    )
+    store = SkillStore(tmp_path / "evo")
+    task = asyncio.create_task(
+        run_task(
+            store=store,
+            provider=provider,
+            model="fake",
+            provider_name="fake",
+            task_id="partial-usage",
+            prompt="task",
+            cwd=tmp_path,
+            tools=[
+                AgentTool(
+                    name="wait",
+                    label="Wait",
+                    description="Wait",
+                    parameters={},
+                    execute_fn=wait_tool,
+                )
+            ],
+        )
+    )
+    await asyncio.wait_for(started.wait(), 10)
+    task.cancel()
+    with pytest.raises(asyncio.CancelledError):
+        await task
+    record = json.loads(next((store.root / "runs").glob("*/run.json")).read_text())
+    assert record["status"] == "cancelled"
+    assert record["usage"]["totalTokens"] == 17

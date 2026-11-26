@@ -155,6 +155,16 @@ async def run_task(
         try:
             if session is not None:
                 session.cancel()
+                # Completed responses still incur usage if a later tool/request is interrupted.
+                record = record.model_copy(
+                    update={
+                        "usage": sum_usage(
+                            message.usage
+                            for message in session.messages
+                            if isinstance(message, AssistantMessage)
+                        )
+                    }
+                )
                 await session.aclose()
         finally:
             record = record.model_copy(update={"finished_at": now()})
