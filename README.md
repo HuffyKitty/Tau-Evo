@@ -11,6 +11,8 @@ uv run tau-evo --store .tau-evo smoke --model deepseek-flash --api-key-file API_
 
 Read the [Evo guide](website/content/guides/evo.md) and
 [SWE-bench experiment guide](website/content/guides/evo-swe.md).
+The first [10-task paired pipeline check](dev-notes/experiments/swe-lite-10-2026-11-27.md)
+resolved 3/10 frozen tasks and 2/10 evolving tasks; it does not establish RSI benefit.
 Automatic learning is restricted to experimental skill stores. Held-out promotion
 and code-level self-modification remain future work; small experiments validate
 the pipeline, not RSI effectiveness. The upstream Tau documentation follows.

@@ -40,6 +40,13 @@ def export(root: Path, output: Path) -> dict[str, Any]:
                 raise ValueError("Task did not use the batch's frozen snapshot")
             if any(skill not in snapshot.skills for skill in run.selection.skills):
                 raise ValueError("Selected skill contents differ from the frozen library")
+            system = (
+                root / arm / "experimental-skills" / "runs" / run.run_id / "system.txt"
+            ).read_text("utf-8")
+            if digest(system) != run.system_sha256:
+                raise ValueError("Stored system prompt does not match the actual run hash")
+            if any(skill.body.strip() not in system for skill in run.selection.skills):
+                raise ValueError("A selected skill was not injected into the system prompt")
             if arm == "frozen" and run.selection.snapshot != "empty":
                 raise ValueError("Frozen arm received skills")
             records[arm].append(run)
@@ -49,10 +56,23 @@ def export(root: Path, output: Path) -> dict[str, Any]:
                 destination.rglob("tau-evo.evo-*.json")
             )
             hashes = {digest(path.read_text("utf-8")) for path in candidates}
+            drivers = [
+                path
+                for path in destination.rglob("driver.json")
+                if json.loads(path.read_text("utf-8")).get("eval_timeout") == config["eval_timeout"]
+            ]
+            if not drivers:
+                raise ValueError("No scorer record using the common evaluation time limit")
             for evidence in run.feedback.evidence:
                 expected = evidence.rsplit(":", 1)[-1]
                 if expected not in hashes:
                     raise ValueError("Official report hash does not match feedback evidence")
+                if not any(
+                    driver.parent in path.parents and digest(path.read_text("utf-8")) == expected
+                    for driver in drivers
+                    for path in candidates
+                ):
+                    raise ValueError("Verdict did not come from the common grading policy")
                 reports.append({"arm": arm, "task_id": run.task_id, "report_sha256": expected})
         if [r.started_at for r in records[arm]] != sorted(r.started_at for r in records[arm]):
             raise ValueError("Task execution order differs from the frozen order")
@@ -93,13 +113,20 @@ def export(root: Path, output: Path) -> dict[str, Any]:
     if not learning_links:
         raise ValueError("No evidence that a learned skill reached a subsequent batch")
     result = {
-        "manifest": config,
+        "manifest": json.loads((root / "experiment.json").read_text("utf-8")),
+        "effective_eval_timeout": config["eval_timeout"],
+        "grading_policy": (
+            json.loads((root / "grading-policy.json").read_text("utf-8"))
+            if (root / "grading-policy.json").exists()
+            else None
+        ),
         "protocol": json.loads((root / "protocol.json").read_text("utf-8")),
         "summary": summarize(root),
         "verified": [
             "same_model_provider_problem_order_and_solver_limits",
             "same_tool_schema_and_task_image_digests",
             "frozen_empty_skills_and_per_batch_snapshot_isolation",
+            "selected_skill_contents_present_in_hashed_system_prompts",
             "official_feedback_matches_retained_report_hashes",
             "selected_skills_cite_only_failed_runs_from_earlier_batches",
         ],

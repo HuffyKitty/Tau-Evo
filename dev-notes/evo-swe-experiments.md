@@ -78,3 +78,7 @@ there is no claim of equal total compute or of established RSI benefit. This pha
 has no independent held-out promotion gate, repeated-seed study, broad repository
 coverage, or source-code self-modification. Those remain prerequisites for stronger
 claims and later scaling decisions.
+
+The completed [10-task comparison and audit data](experiments/swe-lite-10-2026-11-27.md)
+record 3/10 frozen successes and 2/10 evolving successes. The actual failed-run to
+later-skill-injection path is verified; this sample does not demonstrate a benefit.

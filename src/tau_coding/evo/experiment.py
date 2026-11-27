@@ -415,7 +415,9 @@ def summarize(root: Path) -> dict[str, Any]:
                 {
                     "id": r.task_id,
                     "status": r.status,
+                    "stop_reason": r.error_type,
                     "verdict": r.feedback.status if r.feedback else "unknown",
+                    "verdict_reason": r.feedback.reason if r.feedback else "missing",
                     "turns": r.turns,
                     "tool_calls": r.tool_calls,
                     "solver_seconds": round(elapsed_seconds(r), 2),
