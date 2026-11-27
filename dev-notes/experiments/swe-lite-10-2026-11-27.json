@@ -1,0 +1,718 @@
+{
+  "manifest": {
+    "experiment_id": "75ff4f50b7be40888a1bdfd68b40e75f",
+    "dataset": "SWE-bench/SWE-bench_Lite",
+    "dataset_revision": "b0dde1093fe417d83b7184254edf8199c1f0dff5",
+    "tasks_sha256": "e58f2f80d55b07703c924d1dc0928dc972e06e2a4730759c824b940b59cfc560",
+    "task_ids": [
+      "sympy__sympy-11400",
+      "sympy__sympy-11870",
+      "sympy__sympy-11897",
+      "sympy__sympy-12171",
+      "sympy__sympy-12236",
+      "sympy__sympy-12419",
+      "sympy__sympy-12454",
+      "sympy__sympy-12481",
+      "sympy__sympy-13031",
+      "sympy__sympy-13043"
+    ],
+    "selection": "lexicographic instance_id within one repository, before observing outcomes",
+    "repo": "sympy/sympy",
+    "model": "deepseek-flash",
+    "batch_size": 2,
+    "max_turns": 20,
+    "solver_timeout": 300,
+    "eval_timeout": 180,
+    "max_tokens": 4096,
+    "sampling": "provider defaults; same settings for both arms",
+    "harness_version": "5.0.2",
+    "release_images": true,
+    "solver_policy": "current-code-only-v1; no upstream solutions or hidden benchmark artifacts"
+  },
+  "effective_eval_timeout": 1800,
+  "grading_policy": {
+    "manifest_sha256": "9d351d195e36b872c146ff1b200df5ea0a5190770a13e29dc8f1868e76a73a79",
+    "eval_timeout": 1800,
+    "scope": "all existing saved patches and future tasks in both arms; solver unchanged"
+  },
+  "protocol": {
+    "grader_image_id": "sha256:c2ed967fa3074ff1b716fdf97cb2e8518dd669f13daafb37b19b4a2ddad586f0",
+    "swebench": "5.0.2",
+    "solver_sha256": "849ffe9f053d18ec4571dd0deabc3394084d87e8ca35d2eacd988fcd549277e5",
+    "manifest_sha256": "9d351d195e36b872c146ff1b200df5ea0a5190770a13e29dc8f1868e76a73a79"
+  },
+  "summary": {
+    "experiment_id": "75ff4f50b7be40888a1bdfd68b40e75f",
+    "model": "deepseek-flash",
+    "task_ids": [
+      "sympy__sympy-11400",
+      "sympy__sympy-11870",
+      "sympy__sympy-11897",
+      "sympy__sympy-12171",
+      "sympy__sympy-12236",
+      "sympy__sympy-12419",
+      "sympy__sympy-12454",
+      "sympy__sympy-12481",
+      "sympy__sympy-13031",
+      "sympy__sympy-13043"
+    ],
+    "planned_per_arm": 10,
+    "scope": "single-repository small-sample pipeline validation; not RSI efficacy evidence",
+    "arms": {
+      "frozen": {
+        "completed": 10,
+        "passed": 3,
+        "pass_rate_of_planned": 0.3,
+        "solver_tokens": 2574569,
+        "solver_seconds": 799.5,
+        "learning_tokens": 0,
+        "tasks": [
+          {
+            "id": "sympy__sympy-11400",
+            "status": "completed",
+            "stop_reason": null,
+            "verdict": "failed",
+            "verdict_reason": "tests_failed",
+            "turns": 20,
+            "tool_calls": 27,
+            "solver_seconds": 94.89,
+            "tokens": 362443,
+            "snapshot": "empty",
+            "selected_skills": []
+          },
+          {
+            "id": "sympy__sympy-11870",
+            "status": "error",
+            "stop_reason": "TurnLimit",
+            "verdict": "failed",
+            "verdict_reason": "empty_patch",
+            "turns": 20,
+            "tool_calls": 20,
+            "solver_seconds": 75.63,
+            "tokens": 311377,
+            "snapshot": "empty",
+            "selected_skills": []
+          },
+          {
+            "id": "sympy__sympy-11897",
+            "status": "error",
+            "stop_reason": "TurnLimit",
+            "verdict": "failed",
+            "verdict_reason": "empty_patch",
+            "turns": 20,
+            "tool_calls": 24,
+            "solver_seconds": 65.52,
+            "tokens": 272644,
+            "snapshot": "empty",
+            "selected_skills": []
+          },
+          {
+            "id": "sympy__sympy-12171",
+            "status": "error",
+            "stop_reason": "TurnLimit",
+            "verdict": "failed",
+            "verdict_reason": "tests_failed",
+            "turns": 20,
+            "tool_calls": 24,
+            "solver_seconds": 83.87,
+            "tokens": 238401,
+            "snapshot": "empty",
+            "selected_skills": []
+          },
+          {
+            "id": "sympy__sympy-12236",
+            "status": "error",
+            "stop_reason": "TurnLimit",
+            "verdict": "failed",
+            "verdict_reason": "empty_patch",
+            "turns": 20,
+            "tool_calls": 20,
+            "solver_seconds": 59.31,
+            "tokens": 253260,
+            "snapshot": "empty",
+            "selected_skills": []
+          },
+          {
+            "id": "sympy__sympy-12419",
+            "status": "error",
+            "stop_reason": "TurnLimit",
+            "verdict": "passed",
+            "verdict_reason": "resolved",
+            "turns": 20,
+            "tool_calls": 20,
+            "solver_seconds": 101.34,
+            "tokens": 366411,
+            "snapshot": "empty",
+            "selected_skills": []
+          },
+          {
+            "id": "sympy__sympy-12454",
+            "status": "completed",
+            "stop_reason": null,
+            "verdict": "passed",
+            "verdict_reason": "resolved",
+            "turns": 17,
+            "tool_calls": 16,
+            "solver_seconds": 65.45,
+            "tokens": 146016,
+            "snapshot": "empty",
+            "selected_skills": []
+          },
+          {
+            "id": "sympy__sympy-12481",
+            "status": "completed",
+            "stop_reason": null,
+            "verdict": "passed",
+            "verdict_reason": "resolved",
+            "turns": 15,
+            "tool_calls": 14,
+            "solver_seconds": 39.72,
+            "tokens": 110735,
+            "snapshot": "empty",
+            "selected_skills": []
+          },
+          {
+            "id": "sympy__sympy-13031",
+            "status": "error",
+            "stop_reason": "TurnLimit",
+            "verdict": "failed",
+            "verdict_reason": "empty_patch",
+            "turns": 20,
+            "tool_calls": 25,
+            "solver_seconds": 144.11,
+            "tokens": 319646,
+            "snapshot": "empty",
+            "selected_skills": []
+          },
+          {
+            "id": "sympy__sympy-13043",
+            "status": "completed",
+            "stop_reason": null,
+            "verdict": "failed",
+            "verdict_reason": "tests_failed",
+            "turns": 15,
+            "tool_calls": 14,
+            "solver_seconds": 69.67,
+            "tokens": 193636,
+            "snapshot": "empty",
+            "selected_skills": []
+          }
+        ]
+      },
+      "evolving": {
+        "completed": 10,
+        "passed": 2,
+        "pass_rate_of_planned": 0.2,
+        "solver_tokens": 2436296,
+        "solver_seconds": 900.41,
+        "learning_tokens": 56920,
+        "tasks": [
+          {
+            "id": "sympy__sympy-11400",
+            "status": "error",
+            "stop_reason": "TurnLimit",
+            "verdict": "failed",
+            "verdict_reason": "tests_failed",
+            "turns": 20,
+            "tool_calls": 30,
+            "solver_seconds": 90.24,
+            "tokens": 342937,
+            "snapshot": "empty",
+            "selected_skills": []
+          },
+          {
+            "id": "sympy__sympy-11870",
+            "status": "error",
+            "stop_reason": "TurnLimit",
+            "verdict": "failed",
+            "verdict_reason": "tests_failed",
+            "turns": 20,
+            "tool_calls": 20,
+            "solver_seconds": 105.64,
+            "tokens": 275513,
+            "snapshot": "empty",
+            "selected_skills": []
+          },
+          {
+            "id": "sympy__sympy-11897",
+            "status": "error",
+            "stop_reason": "TurnLimit",
+            "verdict": "failed",
+            "verdict_reason": "empty_patch",
+            "turns": 20,
+            "tool_calls": 30,
+            "solver_seconds": 131.0,
+            "tokens": 422831,
+            "snapshot": "2ef2523182d7eae7431354c3478bdd80afa1ec87e8119ff358a54b26debd378b",
+            "selected_skills": [
+              "skill-exact-requested-output-forms",
+              "skill-printer-conditional-output"
+            ]
+          },
+          {
+            "id": "sympy__sympy-12171",
+            "status": "completed",
+            "stop_reason": null,
+            "verdict": "failed",
+            "verdict_reason": "tests_failed",
+            "turns": 16,
+            "tool_calls": 15,
+            "solver_seconds": 75.84,
+            "tokens": 169563,
+            "snapshot": "2ef2523182d7eae7431354c3478bdd80afa1ec87e8119ff358a54b26debd378b",
+            "selected_skills": [
+              "skill-exact-requested-output-forms",
+              "skill-printer-conditional-output"
+            ]
+          },
+          {
+            "id": "sympy__sympy-12236",
+            "status": "error",
+            "stop_reason": "TurnLimit",
+            "verdict": "failed",
+            "verdict_reason": "empty_patch",
+            "turns": 20,
+            "tool_calls": 26,
+            "solver_seconds": 67.97,
+            "tokens": 237713,
+            "snapshot": "13a7c38c18c2e4a490a8392e97a73e818d80e639e23d079bb8fc1b09826d7bae",
+            "selected_skills": [
+              "skill-apply-edit-before-finalizing",
+              "skill-exact-requested-output-forms",
+              "skill-printer-conditional-output"
+            ]
+          },
+          {
+            "id": "sympy__sympy-12419",
+            "status": "error",
+            "stop_reason": "TurnLimit",
+            "verdict": "failed",
+            "verdict_reason": "empty_patch",
+            "turns": 20,
+            "tool_calls": 20,
+            "solver_seconds": 77.62,
+            "tokens": 263156,
+            "snapshot": "13a7c38c18c2e4a490a8392e97a73e818d80e639e23d079bb8fc1b09826d7bae",
+            "selected_skills": [
+              "skill-apply-edit-before-finalizing",
+              "skill-exact-requested-output-forms",
+              "skill-printer-conditional-output"
+            ]
+          },
+          {
+            "id": "sympy__sympy-12454",
+            "status": "completed",
+            "stop_reason": null,
+            "verdict": "passed",
+            "verdict_reason": "resolved",
+            "turns": 13,
+            "tool_calls": 15,
+            "solver_seconds": 50.67,
+            "tokens": 103077,
+            "snapshot": "84bd7db7b1fa441fe44d3de5d24758b2ca766b5132aa9c458c2a23d0f4f3e5ba",
+            "selected_skills": [
+              "skill-apply-edit-before-finalizing",
+              "skill-exact-requested-output-forms",
+              "skill-printer-conditional-output"
+            ]
+          },
+          {
+            "id": "sympy__sympy-12481",
+            "status": "completed",
+            "stop_reason": null,
+            "verdict": "passed",
+            "verdict_reason": "resolved",
+            "turns": 19,
+            "tool_calls": 18,
+            "solver_seconds": 95.52,
+            "tokens": 220375,
+            "snapshot": "84bd7db7b1fa441fe44d3de5d24758b2ca766b5132aa9c458c2a23d0f4f3e5ba",
+            "selected_skills": [
+              "skill-apply-edit-before-finalizing",
+              "skill-exact-requested-output-forms",
+              "skill-printer-conditional-output"
+            ]
+          },
+          {
+            "id": "sympy__sympy-13031",
+            "status": "error",
+            "stop_reason": "TurnLimit",
+            "verdict": "failed",
+            "verdict_reason": "empty_patch",
+            "turns": 20,
+            "tool_calls": 20,
+            "solver_seconds": 74.41,
+            "tokens": 240936,
+            "snapshot": "84bd7db7b1fa441fe44d3de5d24758b2ca766b5132aa9c458c2a23d0f4f3e5ba",
+            "selected_skills": [
+              "skill-apply-edit-before-finalizing",
+              "skill-exact-requested-output-forms",
+              "skill-printer-conditional-output"
+            ]
+          },
+          {
+            "id": "sympy__sympy-13043",
+            "status": "error",
+            "stop_reason": null,
+            "verdict": "failed",
+            "verdict_reason": "tests_failed",
+            "turns": 14,
+            "tool_calls": 17,
+            "solver_seconds": 131.5,
+            "tokens": 160195,
+            "snapshot": "84bd7db7b1fa441fe44d3de5d24758b2ca766b5132aa9c458c2a23d0f4f3e5ba",
+            "selected_skills": [
+              "skill-apply-edit-before-finalizing",
+              "skill-exact-requested-output-forms",
+              "skill-printer-conditional-output"
+            ]
+          }
+        ]
+      }
+    },
+    "paired": {
+      "count": 10,
+      "improvements": [],
+      "regressions": [
+        "sympy__sympy-12419"
+      ],
+      "budget_note": "Equal solver limits; learning tokens are additional, reported separately"
+    }
+  },
+  "verified": [
+    "same_model_provider_problem_order_and_solver_limits",
+    "same_tool_schema_and_task_image_digests",
+    "frozen_empty_skills_and_per_batch_snapshot_isolation",
+    "selected_skill_contents_present_in_hashed_system_prompts",
+    "official_feedback_matches_retained_report_hashes",
+    "selected_skills_cite_only_failed_runs_from_earlier_batches"
+  ],
+  "images": {
+    "sympy__sympy-11400": "swebench/sweb.eval.x86_64.sympy_1776_sympy-11400@sha256:a9127c8893792545a1534e34773cbe1049ec2e39dbb5d7808bb1ceff76b84273",
+    "sympy__sympy-11870": "swebench/sweb.eval.x86_64.sympy_1776_sympy-11870@sha256:fbab7ed8fd0f31af2f041edaba8ddbc0f5571f7d021e789b8bc0057d165ccfd6",
+    "sympy__sympy-11897": "swebench/sweb.eval.x86_64.sympy_1776_sympy-11897@sha256:a799499d74a36201d21b2dbb1f8f14fb9a2a6dae16ceb32debcc485e9df7289d",
+    "sympy__sympy-12171": "swebench/sweb.eval.x86_64.sympy_1776_sympy-12171@sha256:4e20c984fd96241e91cfd507845bb53aac38b2b9cdf4c5a00f8c25ae94e2a2e3",
+    "sympy__sympy-12236": "swebench/sweb.eval.x86_64.sympy_1776_sympy-12236@sha256:d767f3ac506efa1e75534b2e16cd6faae0b8b0184d9cf86fe8e3e09ad8609482",
+    "sympy__sympy-12419": "swebench/sweb.eval.x86_64.sympy_1776_sympy-12419@sha256:f78a02916b66645a5325eb515192081890cfc77a103202d5b611d3b2d4b77893",
+    "sympy__sympy-12454": "swebench/sweb.eval.x86_64.sympy_1776_sympy-12454@sha256:2eea525d4f7b0399e7b9de20458e0499ab364d4780f51c6a8252d32190716640",
+    "sympy__sympy-12481": "swebench/sweb.eval.x86_64.sympy_1776_sympy-12481@sha256:bb526b7d1c4a160d96d3ab925a6b382194a19bf77a72df71e220ce19fe924e7f",
+    "sympy__sympy-13031": "swebench/sweb.eval.x86_64.sympy_1776_sympy-13031@sha256:067e63442eb90f260defbdd2ecb27bb8389449ba889cc7f98fbb1c7585e37b49",
+    "sympy__sympy-13043": "swebench/sweb.eval.x86_64.sympy_1776_sympy-13043@sha256:1a43ce8aba21d1a05164e5ea83759963e3ce896a54ebb3db77988eaeaf51d9a3"
+  },
+  "official_reports": [
+    {
+      "arm": "frozen",
+      "task_id": "sympy__sympy-11400",
+      "report_sha256": "499ed1298bccea313a54b965d15f959a2bf67ad07ba65f307cdcdadc56c7e35e"
+    },
+    {
+      "arm": "frozen",
+      "task_id": "sympy__sympy-11870",
+      "report_sha256": "7cce9be1cfa34c84782cdfeaeb9d47d091a66d75368692a46b1e6601b389d418"
+    },
+    {
+      "arm": "frozen",
+      "task_id": "sympy__sympy-11897",
+      "report_sha256": "34d82c053cf242227dcb4719b01fc2032bc789e74955f32db3ba4a2ac3af6c0a"
+    },
+    {
+      "arm": "frozen",
+      "task_id": "sympy__sympy-12171",
+      "report_sha256": "81d4a89cc54b2cd7c0d73ea7388f5e89c51e343633a88fed906c9ad42f3dd326"
+    },
+    {
+      "arm": "frozen",
+      "task_id": "sympy__sympy-12236",
+      "report_sha256": "26f55aa7f76b9b9689489a9cd9c509db263489444a5984e6d83f28537c04a69f"
+    },
+    {
+      "arm": "frozen",
+      "task_id": "sympy__sympy-12419",
+      "report_sha256": "868477246f1d8510fa7371c45e5afae385edcd40c0dc9a6b2468c06a4093a9a5"
+    },
+    {
+      "arm": "frozen",
+      "task_id": "sympy__sympy-12454",
+      "report_sha256": "9794eff899bc0ac5fabb67450a9f783b92980c0847c8af1d40b0092c95f274a0"
+    },
+    {
+      "arm": "frozen",
+      "task_id": "sympy__sympy-12481",
+      "report_sha256": "9fa3133d6407dd1488da988ffb66aeb50c39551cff65af8a488fc7894675732b"
+    },
+    {
+      "arm": "frozen",
+      "task_id": "sympy__sympy-13031",
+      "report_sha256": "1b20608f02b190dbf637ea1025eb7e8268d0bde1ead6f19c9431132f2e5801c0"
+    },
+    {
+      "arm": "frozen",
+      "task_id": "sympy__sympy-13043",
+      "report_sha256": "a29c2b8072cb399277443008ff74ff75adfd04fa8421ccd782de414820af8e81"
+    },
+    {
+      "arm": "evolving",
+      "task_id": "sympy__sympy-11400",
+      "report_sha256": "499ed1298bccea313a54b965d15f959a2bf67ad07ba65f307cdcdadc56c7e35e"
+    },
+    {
+      "arm": "evolving",
+      "task_id": "sympy__sympy-11870",
+      "report_sha256": "8613d38a90c4b96c7ade1c3ca52addd66d533323049d60de869ef1fe049f1434"
+    },
+    {
+      "arm": "evolving",
+      "task_id": "sympy__sympy-11897",
+      "report_sha256": "38be1ce9c10c55969057b3fb3f70043d5f30bbb9b703037d8a2ad0cab59c7799"
+    },
+    {
+      "arm": "evolving",
+      "task_id": "sympy__sympy-12171",
+      "report_sha256": "81d4a89cc54b2cd7c0d73ea7388f5e89c51e343633a88fed906c9ad42f3dd326"
+    },
+    {
+      "arm": "evolving",
+      "task_id": "sympy__sympy-12236",
+      "report_sha256": "c3e9e65c5049cd446b446362f4f34c3fcc7f5bda6508468d048c3bdd486f64c3"
+    },
+    {
+      "arm": "evolving",
+      "task_id": "sympy__sympy-12419",
+      "report_sha256": "99b3a3698ed85432ccf42ddc4959fa87405a96f030f09961da26b4cdf8dabb8f"
+    },
+    {
+      "arm": "evolving",
+      "task_id": "sympy__sympy-12454",
+      "report_sha256": "9794eff899bc0ac5fabb67450a9f783b92980c0847c8af1d40b0092c95f274a0"
+    },
+    {
+      "arm": "evolving",
+      "task_id": "sympy__sympy-12481",
+      "report_sha256": "9fa3133d6407dd1488da988ffb66aeb50c39551cff65af8a488fc7894675732b"
+    },
+    {
+      "arm": "evolving",
+      "task_id": "sympy__sympy-13031",
+      "report_sha256": "44faa0778e28a73d8b8872dbde7e19645706e271709718ffb28521460a0ffcdc"
+    },
+    {
+      "arm": "evolving",
+      "task_id": "sympy__sympy-13043",
+      "report_sha256": "a29c2b8072cb399277443008ff74ff75adfd04fa8421ccd782de414820af8e81"
+    }
+  ],
+  "learning_links": [
+    {
+      "task_id": "sympy__sympy-11897",
+      "skill_id": "skill-exact-requested-output-forms",
+      "revision": 1,
+      "source_failed_tasks": [
+        "sympy__sympy-11870"
+      ],
+      "body_sha256": "c74eb9b9610f3c8ab7a2c477e1591b23e37b76d4c858ae056c5ac701b477363f"
+    },
+    {
+      "task_id": "sympy__sympy-11897",
+      "skill_id": "skill-printer-conditional-output",
+      "revision": 1,
+      "source_failed_tasks": [
+        "sympy__sympy-11400"
+      ],
+      "body_sha256": "62172424bc74bdf36ca94e49b0cc09cba330d1cb34d14fd4d5894c264603eed8"
+    },
+    {
+      "task_id": "sympy__sympy-12171",
+      "skill_id": "skill-exact-requested-output-forms",
+      "revision": 1,
+      "source_failed_tasks": [
+        "sympy__sympy-11870"
+      ],
+      "body_sha256": "c74eb9b9610f3c8ab7a2c477e1591b23e37b76d4c858ae056c5ac701b477363f"
+    },
+    {
+      "task_id": "sympy__sympy-12171",
+      "skill_id": "skill-printer-conditional-output",
+      "revision": 1,
+      "source_failed_tasks": [
+        "sympy__sympy-11400"
+      ],
+      "body_sha256": "62172424bc74bdf36ca94e49b0cc09cba330d1cb34d14fd4d5894c264603eed8"
+    },
+    {
+      "task_id": "sympy__sympy-12236",
+      "skill_id": "skill-apply-edit-before-finalizing",
+      "revision": 1,
+      "source_failed_tasks": [
+        "sympy__sympy-11897"
+      ],
+      "body_sha256": "c5be9557c78d05ceba04b9ded1bb14a51e225ecab6e9cb5d7f36bcc46c9d69f3"
+    },
+    {
+      "task_id": "sympy__sympy-12236",
+      "skill_id": "skill-exact-requested-output-forms",
+      "revision": 1,
+      "source_failed_tasks": [
+        "sympy__sympy-11870"
+      ],
+      "body_sha256": "c74eb9b9610f3c8ab7a2c477e1591b23e37b76d4c858ae056c5ac701b477363f"
+    },
+    {
+      "task_id": "sympy__sympy-12236",
+      "skill_id": "skill-printer-conditional-output",
+      "revision": 2,
+      "source_failed_tasks": [
+        "sympy__sympy-11400",
+        "sympy__sympy-12171"
+      ],
+      "body_sha256": "551c07b860bf0e54c68ffe437b696505cac553044a37faf53c84a1a02d13829d"
+    },
+    {
+      "task_id": "sympy__sympy-12419",
+      "skill_id": "skill-apply-edit-before-finalizing",
+      "revision": 1,
+      "source_failed_tasks": [
+        "sympy__sympy-11897"
+      ],
+      "body_sha256": "c5be9557c78d05ceba04b9ded1bb14a51e225ecab6e9cb5d7f36bcc46c9d69f3"
+    },
+    {
+      "task_id": "sympy__sympy-12419",
+      "skill_id": "skill-exact-requested-output-forms",
+      "revision": 1,
+      "source_failed_tasks": [
+        "sympy__sympy-11870"
+      ],
+      "body_sha256": "c74eb9b9610f3c8ab7a2c477e1591b23e37b76d4c858ae056c5ac701b477363f"
+    },
+    {
+      "task_id": "sympy__sympy-12419",
+      "skill_id": "skill-printer-conditional-output",
+      "revision": 2,
+      "source_failed_tasks": [
+        "sympy__sympy-11400",
+        "sympy__sympy-12171"
+      ],
+      "body_sha256": "551c07b860bf0e54c68ffe437b696505cac553044a37faf53c84a1a02d13829d"
+    },
+    {
+      "task_id": "sympy__sympy-12454",
+      "skill_id": "skill-apply-edit-before-finalizing",
+      "revision": 2,
+      "source_failed_tasks": [
+        "sympy__sympy-11897",
+        "sympy__sympy-12236",
+        "sympy__sympy-12419"
+      ],
+      "body_sha256": "148929b954410bb0be071d3a3feff1419341fd218b6e93ee04dc6e9355abf5cf"
+    },
+    {
+      "task_id": "sympy__sympy-12454",
+      "skill_id": "skill-exact-requested-output-forms",
+      "revision": 1,
+      "source_failed_tasks": [
+        "sympy__sympy-11870"
+      ],
+      "body_sha256": "c74eb9b9610f3c8ab7a2c477e1591b23e37b76d4c858ae056c5ac701b477363f"
+    },
+    {
+      "task_id": "sympy__sympy-12454",
+      "skill_id": "skill-printer-conditional-output",
+      "revision": 2,
+      "source_failed_tasks": [
+        "sympy__sympy-11400",
+        "sympy__sympy-12171"
+      ],
+      "body_sha256": "551c07b860bf0e54c68ffe437b696505cac553044a37faf53c84a1a02d13829d"
+    },
+    {
+      "task_id": "sympy__sympy-12481",
+      "skill_id": "skill-apply-edit-before-finalizing",
+      "revision": 2,
+      "source_failed_tasks": [
+        "sympy__sympy-11897",
+        "sympy__sympy-12236",
+        "sympy__sympy-12419"
+      ],
+      "body_sha256": "148929b954410bb0be071d3a3feff1419341fd218b6e93ee04dc6e9355abf5cf"
+    },
+    {
+      "task_id": "sympy__sympy-12481",
+      "skill_id": "skill-exact-requested-output-forms",
+      "revision": 1,
+      "source_failed_tasks": [
+        "sympy__sympy-11870"
+      ],
+      "body_sha256": "c74eb9b9610f3c8ab7a2c477e1591b23e37b76d4c858ae056c5ac701b477363f"
+    },
+    {
+      "task_id": "sympy__sympy-12481",
+      "skill_id": "skill-printer-conditional-output",
+      "revision": 2,
+      "source_failed_tasks": [
+        "sympy__sympy-11400",
+        "sympy__sympy-12171"
+      ],
+      "body_sha256": "551c07b860bf0e54c68ffe437b696505cac553044a37faf53c84a1a02d13829d"
+    },
+    {
+      "task_id": "sympy__sympy-13031",
+      "skill_id": "skill-apply-edit-before-finalizing",
+      "revision": 2,
+      "source_failed_tasks": [
+        "sympy__sympy-11897",
+        "sympy__sympy-12236",
+        "sympy__sympy-12419"
+      ],
+      "body_sha256": "148929b954410bb0be071d3a3feff1419341fd218b6e93ee04dc6e9355abf5cf"
+    },
+    {
+      "task_id": "sympy__sympy-13031",
+      "skill_id": "skill-exact-requested-output-forms",
+      "revision": 1,
+      "source_failed_tasks": [
+        "sympy__sympy-11870"
+      ],
+      "body_sha256": "c74eb9b9610f3c8ab7a2c477e1591b23e37b76d4c858ae056c5ac701b477363f"
+    },
+    {
+      "task_id": "sympy__sympy-13031",
+      "skill_id": "skill-printer-conditional-output",
+      "revision": 2,
+      "source_failed_tasks": [
+        "sympy__sympy-11400",
+        "sympy__sympy-12171"
+      ],
+      "body_sha256": "551c07b860bf0e54c68ffe437b696505cac553044a37faf53c84a1a02d13829d"
+    },
+    {
+      "task_id": "sympy__sympy-13043",
+      "skill_id": "skill-apply-edit-before-finalizing",
+      "revision": 2,
+      "source_failed_tasks": [
+        "sympy__sympy-11897",
+        "sympy__sympy-12236",
+        "sympy__sympy-12419"
+      ],
+      "body_sha256": "148929b954410bb0be071d3a3feff1419341fd218b6e93ee04dc6e9355abf5cf"
+    },
+    {
+      "task_id": "sympy__sympy-13043",
+      "skill_id": "skill-exact-requested-output-forms",
+      "revision": 1,
+      "source_failed_tasks": [
+        "sympy__sympy-11870"
+      ],
+      "body_sha256": "c74eb9b9610f3c8ab7a2c477e1591b23e37b76d4c858ae056c5ac701b477363f"
+    },
+    {
+      "task_id": "sympy__sympy-13043",
+      "skill_id": "skill-printer-conditional-output",
+      "revision": 2,
+      "source_failed_tasks": [
+        "sympy__sympy-11400",
+        "sympy__sympy-12171"
+      ],
+      "body_sha256": "551c07b860bf0e54c68ffe437b696505cac553044a37faf53c84a1a02d13829d"
+    }
+  ]
+}

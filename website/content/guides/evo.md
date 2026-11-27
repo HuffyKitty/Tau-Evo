@@ -8,9 +8,10 @@ It selects reviewed skills, freezes their contents for one task, records tool us
 and provider token usage, and runs a host-owned verifier after the solver finishes.
 The portable agent loop and provider protocols remain reusable.
 
-This is the foundation for Evo-Harness experiments. Automatic failure reflection,
-skill compilation, held-out promotion gates, and source-code self-modification
-are future phases. The included smoke skill is a human-authored fixture.
+The [SWE-bench experiment guide](../evo-swe/) adds automatic failure reflection,
+skill compilation and batch scheduling in a separate experimental store. Held-out
+promotion gates and source-code self-modification remain future work. The included
+smoke skill is a human-authored fixture.
 
 ## Install and verify DeepSeek
 
@@ -129,7 +130,7 @@ runner for clean comparisons and external verification.
 ## Deterministic tests
 
 ```bash
-uv run pytest -q tests/test_evo.py
+uv run pytest -q tests/test_evo.py tests/test_evo_learning.py
 uv run ruff check .
 uv run mypy --follow-imports=silent src/tau_coding/evo src/tau_coding/extensions/evo_harness
 ```

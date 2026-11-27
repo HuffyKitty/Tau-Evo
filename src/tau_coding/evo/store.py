@@ -75,6 +75,22 @@ class SkillStore:
     def publish(self, snapshot: SkillSnapshot, *, expected: str, reviewed: bool) -> str:
         if not reviewed:
             raise ValueError("Review the complete skill snapshot before activation")
+        return self._activate(snapshot, expected=expected)
+
+    def activate_experimental(
+        self,
+        snapshot: SkillSnapshot,
+        *,
+        expected: str,
+        experiment_id: str,
+    ) -> str:
+        """Activate only inside an explicitly selected research store, not human approval."""
+        if not experiment_id or self.root.name != "experimental-skills":
+            raise ValueError("Automatic activation requires an experimental-skills store")
+        atomic_write(self.root / "experiment.json", json.dumps({"experiment_id": experiment_id}))
+        return self._activate(snapshot, expected=expected)
+
+    def _activate(self, snapshot: SkillSnapshot, *, expected: str) -> str:
         with self._lock():
             if self.snapshot().version != expected:
                 raise ValueError("Active snapshot changed; review against the current version")
