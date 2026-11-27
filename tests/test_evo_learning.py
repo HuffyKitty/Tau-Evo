@@ -10,7 +10,14 @@ from pi_event_helpers import assistant_done, assistant_start
 from tau_agent.messages import AssistantMessage
 from tau_ai.fake import FakeProvider
 from tau_coding.evo.evidence import redact
-from tau_coding.evo.experiment import read_experiment, rescore, run_stream
+from tau_coding.evo.experiment import (
+    adjudicate_timeout,
+    read_experiment,
+    regrade,
+    rescore,
+    run_stream,
+    verify_timeout_evidence,
+)
 from tau_coding.evo.learning import Compilation, Decision, apply_compilation, ask_json, reflect
 from tau_coding.evo.models import (
     CandidateLesson,
@@ -200,9 +207,11 @@ def test_redaction_and_manifest_integrity(tmp_path: Path) -> None:
 
 
 @pytest.mark.anyio
+@pytest.mark.parametrize("driver_timeout", [False, True])
 async def test_official_grader_uses_linux_cli_and_reads_release_report(
     tmp_path: Path,
     monkeypatch: pytest.MonkeyPatch,
+    driver_timeout: bool,
 ) -> None:
     calls: list[list[str]] = []
 
@@ -220,6 +229,8 @@ async def test_official_grader_uses_linux_cli_and_reads_release_report(
                 tmp_path / "logs" / "run_evaluation" / run_id / "tau-evo/task/report.json",
                 json.dumps({"task": {"resolved": True, "tests_status": {}}}),
             )
+            if driver_timeout:
+                raise TimeoutError("Driver stuck after writing official results")
         return 0, ""
 
     monkeypatch.setattr("tau_coding.evo.swe.command", docker)
@@ -228,6 +239,30 @@ async def test_official_grader_uses_linux_cli_and_reads_release_report(
     assert (tmp_path / "feedback.json").exists()
     assert calls[-1][:3] == ["docker", "rm", "-f"]
     assert "\r\n" not in (tmp_path / "prediction.jsonl").read_bytes().decode()
+
+
+def test_timeout_diagnosis_requires_official_evidence_and_passing_control(tmp_path: Path) -> None:
+    text = json.dumps(
+        {
+            "failure_reasons": {"task": "tests_timed_out"},
+            "ambiguous_failure_ids": ["task"],
+        }
+    )
+    atomic_write(tmp_path / "tau-evo.evo-test.json", text)
+    candidate = VerifierFeedback(
+        verifier="official", status="unknown", evidence=("official:" + digest(text),)
+    )
+    verify_timeout_evidence(tmp_path, "task", candidate)
+    for status in ("failed", "unknown"):
+        control = VerifierFeedback(verifier="official", status=status)
+        assert adjudicate_timeout(candidate, control, 180) == candidate
+    control = VerifierFeedback(verifier="official", status="passed", evidence=("control:hash",))
+    feedback = adjudicate_timeout(candidate, control, 180)
+    assert feedback.status == "failed" and feedback.reason == "candidate_tests_timeout"
+    assert feedback.evidence == (*candidate.evidence, "control:hash")
+    atomic_write(tmp_path / "tau-evo.evo-test.json", "{}")
+    with pytest.raises(ValueError, match="official ambiguous"):
+        verify_timeout_evidence(tmp_path, "task", candidate)
 
 
 @pytest.mark.anyio
@@ -317,3 +352,54 @@ async def test_learning_checkpoint_prevents_unaccounted_model_retries(tmp_path: 
         await ask_json(provider, "fake", "system", "prompt", failed)
     assert len(provider.calls) == 2
     assert json.loads(failed.read_text("utf-8"))["response"] == "malformed JSON"
+
+
+@pytest.mark.anyio
+async def test_grading_calibration_is_uniform_and_preserves_solver_records(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    tasks = [{"instance_id": "task", "image": "image"}]
+    data = json.dumps(tasks)
+    manifest = json.dumps(
+        {
+            "experiment_id": "test",
+            "model": "fake",
+            "task_ids": ["task"],
+            "tasks_sha256": digest(data),
+            "eval_timeout": 180,
+        }
+    )
+    atomic_write(tmp_path / "tasks.json", data)
+    atomic_write(tmp_path / "experiment.json", manifest)
+    for arm in ("frozen", "evolving"):
+        destination = tmp_path / arm / "tasks/task"
+        atomic_write(
+            destination / "result.json", make_run("task", SkillSnapshot()).model_dump_json()
+        )
+        atomic_write(destination / "image.json", json.dumps({"image": "pinned"}))
+        atomic_write(destination / "model.patch", "original patch")
+    calls = []
+
+    async def image(value: str) -> tuple[str, bool]:
+        return value, False
+
+    async def score(
+        task: dict[str, Any], patch: str, *args: Any, **kwargs: Any
+    ) -> VerifierFeedback:
+        assert patch == "original patch" and kwargs["timeout"] == 1800
+        calls.append(task["instance_id"])
+        return VerifierFeedback(verifier="official", status="passed")
+
+    monkeypatch.setattr("tau_coding.evo.experiment.ensure_image", image)
+    monkeypatch.setattr("tau_coding.evo.experiment.official_score", score)
+    await regrade(tmp_path, 1800)
+    assert len(calls) == 2
+    await regrade(tmp_path, 1800)
+    assert len(calls) == 2
+    assert (tmp_path / "experiment.json").read_text("utf-8") == manifest
+    config, _ = read_experiment(tmp_path)
+    assert config["eval_timeout"] == 1800 and config["original_eval_timeout"] == 180
+    (tmp_path / "grading-complete.json").unlink()
+    with pytest.raises(ValueError, match="uniform regrading"):
+        await run_stream(tmp_path, "evolving", FakeProvider([]))

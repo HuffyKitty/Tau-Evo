@@ -16,7 +16,7 @@ import httpx
 from tau_ai.env import OpenAICompatibleConfig
 from tau_ai.openai_compatible import OpenAICompatibleProvider
 from tau_coding.evo.cli import DEEPSEEK_URL, read_api_key
-from tau_coding.evo.experiment import read_experiment, rescore, run_stream, summarize
+from tau_coding.evo.experiment import read_experiment, regrade, rescore, run_stream, summarize
 from tau_coding.evo.models import digest
 from tau_coding.evo.provenance import freeze_protocol
 from tau_coding.evo.store import atomic_write
@@ -113,6 +113,16 @@ async def preflight(root: Path) -> None:
     print("Official reference-patch preflight passed (not a model result).")
 
 
+async def retry_score(args: argparse.Namespace) -> None:
+    await freeze_protocol(args.experiment)
+    await rescore(args.experiment, args.arm, args.task_id, diagnose_timeout=args.diagnose_timeout)
+
+
+async def calibrate(args: argparse.Namespace) -> None:
+    await freeze_protocol(args.experiment)
+    await regrade(args.experiment, args.eval_timeout)
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--experiment", type=Path, required=True)
@@ -125,14 +135,21 @@ def main() -> None:
     init.add_argument("--revision", help="Exact dataset commit SHA; otherwise pin the current SHA")
     init.add_argument("--max-turns", type=int, default=20)
     init.add_argument("--solver-timeout", type=int, default=300)
-    init.add_argument("--eval-timeout", type=int, default=180)
+    init.add_argument("--eval-timeout", type=int, default=1800)
     execute = sub.add_parser("run")
     execute.add_argument("--arm", choices=("frozen", "evolving"), required=True)
     execute.add_argument("--api-key-file", type=Path)
     retry = sub.add_parser("rescore")
     retry.add_argument("--arm", choices=("frozen", "evolving"), required=True)
     retry.add_argument("--task-id", required=True)
+    retry.add_argument(
+        "--diagnose-timeout",
+        action="store_true",
+        help="For official ambiguous test timeouts, run a same-budget reference-patch control",
+    )
     sub.add_parser("preflight")
+    calibration = sub.add_parser("regrade")
+    calibration.add_argument("--eval-timeout", type=int, required=True)
     sub.add_parser("summary")
     args = parser.parse_args()
     if args.operation == "prepare":
@@ -144,7 +161,9 @@ def main() -> None:
     elif args.operation == "preflight":
         asyncio.run(preflight(args.experiment))
     elif args.operation == "rescore":
-        asyncio.run(rescore(args.experiment, args.arm, args.task_id))
+        asyncio.run(retry_score(args))
+    elif args.operation == "regrade":
+        asyncio.run(calibrate(args))
     else:
         print(json.dumps(summarize(args.experiment), ensure_ascii=False, indent=2))
 

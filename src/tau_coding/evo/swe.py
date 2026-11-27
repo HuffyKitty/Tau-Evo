@@ -241,7 +241,7 @@ async def official_score(
     patch: str,
     destination: Path,
     *,
-    timeout: int = 180,
+    timeout: int = 1800,
 ) -> VerifierFeedback:
     destination.mkdir(parents=True, exist_ok=True)
     dataset = destination / "task.json"
@@ -260,44 +260,57 @@ async def official_score(
     run_id = "evo-" + uuid4().hex[:16]
     grader_name = "tau-evo-grader-" + run_id
     try:
-        code, _ = await command(
-            [
-                "docker",
-                "run",
-                "--rm",
-                "--name",
-                grader_name,
-                "--mount",
-                f"type=bind,source={destination.resolve()},target=/workspace",
-                "--mount",
-                "type=bind,source=/var/run/docker.sock,target=/var/run/docker.sock",
-                "tau-evo-grader:5.0.2",
-                "python",
-                "-m",
-                "swebench.harness.run_evaluation",
-                "--dataset_name",
-                "/workspace/task.json",
-                "--predictions_path",
-                "/workspace/prediction.jsonl",
-                "--max_workers",
-                "1",
-                "--run_id",
-                run_id,
-                "--timeout",
-                str(timeout),
-            ],
-            cwd=destination,
-            timeout=timeout + 180,
-            output_path=destination / "harness.log",
-        )
+        try:
+            code, _ = await command(
+                [
+                    "docker",
+                    "run",
+                    "--rm",
+                    "--name",
+                    grader_name,
+                    "--mount",
+                    f"type=bind,source={destination.resolve()},target=/workspace",
+                    "--mount",
+                    "type=bind,source=/var/run/docker.sock,target=/var/run/docker.sock",
+                    "tau-evo-grader:5.0.2",
+                    "python",
+                    "-m",
+                    "swebench.harness.run_evaluation",
+                    "--dataset_name",
+                    "/workspace/task.json",
+                    "--predictions_path",
+                    "/workspace/prediction.jsonl",
+                    "--max_workers",
+                    "1",
+                    "--run_id",
+                    run_id,
+                    "--timeout",
+                    str(timeout),
+                ],
+                cwd=destination,
+                timeout=timeout + 180,
+                output_path=destination / "harness.log",
+            )
+        except TimeoutError:
+            code = -1
         root = destination / "logs" / "run_evaluation" / run_id
         summary_path = destination / f"tau-evo.{run_id}.json"
         report_path = root / "tau-evo" / task["instance_id"] / "report.json"
-        if code or not summary_path.exists():
+        atomic_write(
+            destination / "driver.json",
+            json.dumps(
+                {
+                    "run_id": run_id,
+                    "exit_code": code,
+                    "eval_timeout": timeout,
+                }
+            ),
+        )
+        if not summary_path.exists():
             return VerifierFeedback(
                 verifier="swebench-5.0.2",
                 status="unknown",
-                reason="harness_process_error",
+                reason="harness_timeout" if code == -1 else "harness_process_error",
                 summary="Inspect host-only harness.log; infrastructure errors are excluded.",
             )
         summary = json.loads(summary_path.read_text(encoding="utf-8"))
@@ -311,11 +324,9 @@ async def official_score(
         )
         atomic_write(destination / "feedback.json", feedback.model_dump_json(indent=2))
         return feedback
-    except TimeoutError:
+    except (ValueError, KeyError, TypeError):
         return VerifierFeedback(
-            verifier="swebench-5.0.2",
-            status="unknown",
-            reason="harness_timeout",
+            verifier="swebench-5.0.2", status="unknown", reason="invalid_official_report"
         )
     finally:
         # Only our uniquely named scorer container; never touch unrelated Docker resources.

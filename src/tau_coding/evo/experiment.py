@@ -10,7 +10,7 @@ from uuid import uuid4
 
 from tau_agent.provider import ModelProvider
 from tau_coding.evo.learning import compile_lessons, reflect
-from tau_coding.evo.models import CandidateLesson, SkillSnapshot, TaskRun, digest
+from tau_coding.evo.models import CandidateLesson, SkillSnapshot, TaskRun, VerifierFeedback, digest
 from tau_coding.evo.runner import run_task
 from tau_coding.evo.store import SkillStore, atomic_write
 from tau_coding.evo.swe import TaskContainer, command, ensure_image, official_score
@@ -24,6 +24,17 @@ def read_experiment(root: Path) -> tuple[dict[str, Any], list[dict[str, Any]]]:
     tasks: list[dict[str, Any]] = json.loads(text)
     if [task["instance_id"] for task in tasks] != config["task_ids"]:
         raise ValueError("Task order differs from the experiment manifest")
+    policy_path = root / "grading-policy.json"
+    if policy_path.exists():
+        policy = json.loads(policy_path.read_text("utf-8"))
+        if policy["manifest_sha256"] != digest((root / "experiment.json").read_text("utf-8")):
+            raise ValueError("Grading policy belongs to a different experiment")
+        config = dict(
+            config,
+            original_eval_timeout=config["eval_timeout"],
+            eval_timeout=policy["eval_timeout"],
+            grading_policy_sha256=digest(policy_path.read_text("utf-8")),
+        )
     return config, tasks
 
 
@@ -101,6 +112,12 @@ async def run_stream(
 ) -> dict[str, Any]:
     root = root.resolve()
     config, tasks = read_experiment(root)
+    if (root / "grading-policy.json").exists():
+        complete = root / "grading-complete.json"
+        if not complete.exists() or json.loads(complete.read_text("utf-8")) != json.loads(
+            (root / "grading-policy.json").read_text("utf-8")
+        ):
+            raise ValueError("Complete uniform regrading before resuming either solver arm")
     arm_dir = root / arm
     store = SkillStore(arm_dir / "experimental-skills")
     arm_dir.mkdir(parents=True, exist_ok=True)
@@ -212,7 +229,7 @@ async def run_stream(
     return summarize(root)
 
 
-async def rescore(root: Path, arm: str, task_id: str) -> None:
+async def rescore(root: Path, arm: str, task_id: str, *, diagnose_timeout: bool = False) -> None:
     """Retry infrastructure grading only; never rerun the solver or spend model tokens."""
     root = root.resolve()
     config, tasks = read_experiment(root)
@@ -228,15 +245,23 @@ async def rescore(root: Path, arm: str, task_id: str) -> None:
         run = TaskRun.model_validate_json(result_path.read_text("utf-8"))
         if run.feedback is not None and run.feedback.status != "unknown":
             raise ValueError("Only unknown infrastructure results can be rescored")
+        if diagnose_timeout:
+            verify_timeout_evidence(destination, task_id, run.feedback)
         image = json.loads((destination / "image.json").read_text("utf-8"))["image"]
         pinned, created = await ensure_image(image)
         try:
             feedback = await official_score(
                 dict(task, image=pinned),
-                (destination / "model.patch").read_text("utf-8"),
-                destination / ("rescore-" + uuid4().hex[:8]),
+                task["patch"]
+                if diagnose_timeout
+                else (destination / "model.patch").read_text("utf-8"),
+                destination
+                / (("timeout-control-" if diagnose_timeout else "rescore-") + uuid4().hex[:8]),
                 timeout=config["eval_timeout"],
             )
+            if diagnose_timeout:
+                assert run.feedback is not None
+                feedback = adjudicate_timeout(run.feedback, feedback, config["eval_timeout"])
             run = run.model_copy(update={"feedback": feedback})
             atomic_write(result_path, run.model_dump_json(indent=2))
             atomic_write(
@@ -247,6 +272,103 @@ async def rescore(root: Path, arm: str, task_id: str) -> None:
         finally:
             if created and config.get("release_images", True):
                 await command(["docker", "image", "rm", image], timeout=60)
+    finally:
+        lock.unlink(missing_ok=True)
+    summarize(root)
+
+
+def verify_timeout_evidence(
+    destination: Path, task_id: str, feedback: VerifierFeedback | None
+) -> None:
+    if feedback is None or not feedback.evidence:
+        raise ValueError("No official timeout evidence")
+    expected = feedback.evidence[0].rsplit(":", 1)[-1]
+    for path in destination.rglob("tau-evo.evo-*.json"):
+        text = path.read_text("utf-8")
+        if digest(text) == expected:
+            report = json.loads(text)
+            if (
+                report.get("failure_reasons", {}).get(task_id) == "tests_timed_out"
+                and task_id in report.get("ambiguous_failure_ids", [])
+                and task_id not in report.get("infra_failure_ids", [])
+            ):
+                return
+    raise ValueError("Only an official ambiguous test timeout can use this diagnosis")
+
+
+def adjudicate_timeout(
+    candidate: VerifierFeedback, control: VerifierFeedback, timeout: int
+) -> VerifierFeedback:
+    if control.status != "passed":
+        return candidate
+    return VerifierFeedback(
+        verifier="swebench-5.0.2",
+        status="failed",
+        reason="candidate_tests_timeout",
+        summary=(
+            f"Candidate tests exceeded {timeout} seconds in the official harness. "
+            "The official reference patch passed in the same pinned image and time limit. "
+            "This is a diagnosed timeout, not an assertion-test verdict; both reports are retained."
+        ),
+        evidence=(*candidate.evidence, *control.evidence),
+    )
+
+
+async def regrade(root: Path, timeout: int) -> None:
+    """Calibrate scoring uniformly before any learned batch has been activated."""
+    root = root.resolve()
+    config, tasks = read_experiment(root)
+    if timeout < config["eval_timeout"]:
+        raise ValueError("Calibration may only increase the grading time limit")
+    if any((root / "evolving" / "batches").glob("*/complete.json")):
+        raise ValueError("Start a new experiment to change grading after skill compilation")
+    lock = root / "stream.lock"
+    with lock.open("x", encoding="utf-8") as handle:
+        handle.write("regrade")
+    try:
+        policy_path = root / "grading-policy.json"
+        policy = {
+            "manifest_sha256": digest((root / "experiment.json").read_text("utf-8")),
+            "eval_timeout": timeout,
+            "scope": "all existing saved patches and future tasks in both arms; solver unchanged",
+        }
+        if policy_path.exists() and json.loads(policy_path.read_text("utf-8")) != policy:
+            raise ValueError("Grading policy is already frozen at another limit")
+        atomic_write(policy_path, json.dumps(policy, indent=2))
+        for arm in ("frozen", "evolving"):
+            for task in tasks:
+                destination = root / arm / "tasks" / task["instance_id"]
+                result_path = destination / "result.json"
+                if not result_path.exists():
+                    continue
+                checkpoint = destination / f"graded-{timeout}.json"
+                if checkpoint.exists():
+                    continue
+                run = TaskRun.model_validate_json(result_path.read_text("utf-8"))
+                image = json.loads((destination / "image.json").read_text("utf-8"))["image"]
+                await ensure_image(image)
+                feedback = await official_score(
+                    dict(task, image=image),
+                    (destination / "model.patch").read_text("utf-8"),
+                    destination / f"regrade-{timeout}",
+                    timeout=timeout,
+                )
+                if run.feedback is None or run.feedback.status != feedback.status:
+                    lesson_path = destination / "lesson.json"
+                    if lesson_path.exists():
+                        lesson_path.rename(destination / "lesson-before-regrade.json")
+                atomic_write(destination / "before-regrade.json", run.model_dump_json(indent=2))
+                run = run.model_copy(update={"feedback": feedback})
+                atomic_write(result_path, run.model_dump_json(indent=2))
+                atomic_write(
+                    root / arm / "experimental-skills" / "runs" / run.run_id / "run.json",
+                    run.model_dump_json(indent=2),
+                )
+                print(f"REGRADE {arm} {task['instance_id']}: {feedback.status}", flush=True)
+                if feedback.status == "unknown":
+                    raise RuntimeError("Regrading is still unknown; inspect the official logs")
+                atomic_write(checkpoint, json.dumps({"run_id": run.run_id, "timeout": timeout}))
+        atomic_write(root / "grading-complete.json", json.dumps(policy))
     finally:
         lock.unlink(missing_ok=True)
     summarize(root)

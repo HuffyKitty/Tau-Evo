@@ -37,6 +37,15 @@ twice on resume. A completed compiler candidate can be activated idempotently af
 a crash; compare-and-swap prevents replacing an unexpected active library. An
 interrupted task with unknown tool side effects requires inspection. A scorer-only
 failure can be retried using the original patch without another solver call.
+An ambiguous official test timeout can additionally run a same-image, same-limit
+reference-patch control. A passing control diagnoses the candidate timeout as a
+negative result; a failed or unknown control leaves it unknown. Both official
+evidence hashes are kept, and the reference code never enters learning context.
+Completed official reports survive a later driver shutdown timeout.
+Grading calibration is allowed only before the first learned batch completes.
+It rescores every saved patch from both arms, preserves the original manifest and
+reports, records a separate grading policy, and blocks solver continuation until
+regrading finishes. Solver model calls, patches and budgets are retained.
 
 Invalid compilation is atomic: no partial skill set becomes active. Experimental
 activation is distinct from production `publish(reviewed=True)`; it does not forge

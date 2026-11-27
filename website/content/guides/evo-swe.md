@@ -57,7 +57,7 @@ problem statements, model, task order, tool, and per-task solver limits:
 | Solver wall time | 300 seconds |
 | Output tokens per model call | 4,096 |
 | One shell command | 60 seconds |
-| Official evaluation | 180 seconds |
+| Official evaluation | 1,800 seconds |
 | Selected skills | At most 3, within 8,000 rendered UTF-8 bytes |
 | Compiled library | At most 6 skills, within 16,000 body bytes |
 
@@ -126,8 +126,37 @@ uv run --extra benchmark tau-evo-swe --experiment .tau-evo/swe-lite-10 run --arm
 
 `rescore` accepts only unknown verdicts, uses the pinned image and saved patch,
 and consumes no model tokens. It keeps prior grading logs in place.
+For an official *ambiguous test timeout*, add `--diagnose-timeout` to run the
+reference patch as a diagnostic control, using the same image and evaluation
+time limit. Only a passing control yields a `candidate_tests_timeout` failure;
+otherwise the verdict stays unknown and learning remains blocked. This diagnosed
+timeout is reported separately from ordinary assertion failures. Both official
+reports are retained; no reference code is exposed to the solver or learner.
+
+If even the reference patch exceeds the initial limit, calibrate grading before
+any learned batch has been activated:
+
+```bash
+uv run --extra benchmark tau-evo-swe --experiment .tau-evo/swe-lite-10 regrade --eval-timeout 1800
+```
+
+This uniformly rescores **every saved patch in both arms**, without new solver
+calls. It writes a separate frozen `grading-policy.json`, preserves the original
+manifest and prior reports, and applies the new limit to future tasks in both
+arms. A completion gate blocks solver resumption until all saved patches have
+been rescored. Once learning has advanced, use a new experiment to recalibrate.
+The default is now the official harness's 1,800-second evaluation limit.
+
+If the grader driver stalls after writing a complete official report, the report
+is retained as the source of the verdict; `driver.json` records the process error.
 Full local artifacts may contain private task text, model reasoning, or logs;
 review summaries before publication. The `.tau-evo` directory is ignored by Git.
+
+After both arms finish, verify paired invariants and export a summary for review:
+
+```bash
+uv run python scripts/report_evo_experiment.py --experiment .tau-evo/swe-lite-10 --output .tau-evo/swe-lite-10/review-summary.json
+```
 
 ## Interpret a small experiment
 
