@@ -1,4 +1,4 @@
-name: Evo foundation
+name: Evo experiments
 
 on:
   push:
@@ -22,7 +22,7 @@ jobs:
           python-version-file: .python-version
       - uses: astral-sh/setup-uv@1c37ad07a6a961277cf70c0d37d6f313000f5884
       - run: uv sync --dev --locked
-      - run: uv run pytest -q tests/test_evo.py
+      - run: uv run pytest -q tests/test_evo.py tests/test_evo_learning.py
       - run: uv run ruff check .
       - run: uv run ruff format --check .
       - run: uv run mypy --follow-imports=silent src/tau_coding/evo src/tau_coding/extensions/evo_harness

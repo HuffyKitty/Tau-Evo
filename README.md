@@ -1,8 +1,8 @@
 # Tau-Evo
 
-Tau-Evo extends [Tau](https://github.com/huggingface/tau) with an opt-in foundation
-for Evo-Harness experiments: frozen skill snapshots, reproducible task runs,
-external verification, audit records, and reviewed activation/rollback.
+Tau-Evo extends [Tau](https://github.com/huggingface/tau) with opt-in Evo-Harness
+experiments: frozen skill snapshots, official SWE-bench grading, failure
+reflection, skill compilation, batch scheduling, and auditable comparisons.
 
 ```bash
 uv sync --dev --locked
@@ -10,9 +10,10 @@ uv run tau-evo --store .tau-evo smoke --model deepseek-flash --api-key-file API_
 ```
 
 Read the [Evo guide](website/content/guides/evo.md) and
-[implementation and validation notes](dev-notes/evo-foundation.md).
-This phase provides the execution foundation; automatic skill evolution and
-code-level self-modification are planned. The upstream Tau documentation follows.
+[SWE-bench experiment guide](website/content/guides/evo-swe.md).
+Automatic learning is restricted to experimental skill stores. Held-out promotion
+and code-level self-modification remain future work; small experiments validate
+the pipeline, not RSI effectiveness. The upstream Tau documentation follows.
 
 <p align="center">
   <img src="docs/assets/tau-header.svg" alt="Tau — a Python coding-agent harness inspired by Pi" width="100%" />

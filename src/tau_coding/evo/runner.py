@@ -13,7 +13,7 @@ from tau_agent.messages import AssistantMessage, sum_usage
 from tau_agent.provider import ModelProvider
 from tau_agent.session import JsonlSessionStorage
 from tau_agent.tools import AgentTool
-from tau_coding.evo.models import TaskRun, VerifierFeedback, digest, now
+from tau_coding.evo.models import SkillSnapshot, TaskRun, VerifierFeedback, digest, now
 from tau_coding.evo.selection import render_selection, select_skills
 from tau_coding.evo.store import SkillStore, atomic_write
 from tau_coding.paths import TauPaths
@@ -41,13 +41,15 @@ async def run_task(
     max_skills: int = 3,
     max_turns: int = 12,
     timeout_seconds: float = 180,
+    skill_snapshot: SkillSnapshot | None = None,
+    system_context: str = "",
 ) -> TaskRun:
     """Caller owns the provider and workspace; neither is a security sandbox."""
     if max_turns < 1 or timeout_seconds <= 0 or not prompt.strip():
         raise ValueError("Provide a prompt, positive max_turns and timeout_seconds")
     cwd = cwd.resolve(strict=True)
     selection = select_skills(
-        store.snapshot(),
+        skill_snapshot if skill_snapshot is not None else store.snapshot(),
         prompt,
         max_bytes=max_bytes,
         max_skills=max_skills,
@@ -56,7 +58,9 @@ async def run_task(
         BuildSystemPromptOptions(
             cwd=cwd,
             tools=tools,
-            append_system_prompt=render_selection(selection),
+            append_system_prompt="\n\n".join(
+                filter(None, (system_context, render_selection(selection)))
+            ),
         )
     )
     run_id = uuid4().hex

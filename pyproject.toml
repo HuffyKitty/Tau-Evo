@@ -31,6 +31,10 @@ Issues = "https://github.com/huggingface/tau/issues"
 [project.scripts]
 tau = "tau_coding.cli:app"
 tau-evo = "tau_coding.evo.cli:main"
+tau-evo-swe = "tau_coding.evo.benchmark_cli:main"
+
+[project.optional-dependencies]
+benchmark = ["swebench==5.0.2"]
 
 [dependency-groups]
 dev = [

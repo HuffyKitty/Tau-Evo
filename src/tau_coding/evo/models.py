@@ -73,6 +73,8 @@ class VerifierFeedback(Record):
     exit_code: int | None = None
     output_sha256: str | None = None
     reason: str = ""
+    summary: str = ""
+    evidence: tuple[str, ...] = ()
 
 
 class TaskRun(Record):

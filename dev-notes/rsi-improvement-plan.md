@@ -1,6 +1,6 @@
 # Tau 的 RSI 改进方案：从可验证的 Skill 演化开始
 
-> 状态：Evo 执行基座已实现，见 [实现与验证记录](evo-foundation.md)。自动反思、编译与基准门控仍按本文后续阶段推进。上游基线为 `huggingface/tau` 的 `775ed0519edab1ebedd340a1819940a2d98fc889`（`tau-ai` 0.4.12）。本文中的 RSI 指 recursive self-improvement，即利用前一批任务的外部反馈改进后续任务的 agent 行为。
+> 状态：Evo 执行基座、官方 SWE-bench 评分、自动反思/编译和批次调度已实现，见 [执行基座记录](evo-foundation.md) 和 [实验控制器说明](evo-swe-experiments.md)。独立保留集门控仍是后续阶段。上游基线为 `huggingface/tau` 的 `775ed0519edab1ebedd340a1819940a2d98fc889`（`tau-ai` 0.4.12）。本文中的 RSI 指 recursive self-improvement，即利用前一批任务的外部反馈改进后续任务的 agent 行为。
 
 ## 1. 研究依据和目标边界
 
