@@ -22,8 +22,10 @@ The grader Docker image is built once and pinned by image ID for both arms.
 The solver and the official test runner use separate containers. The solver sees
 the issue and repository only. Reflect sees bounded trajectory, failed test names
 and counts, and host-owned evidence hashes; it never sees reference or test patches.
-Compile sees only existing skills and lessons from the just-completed batch. Source
-run IDs are validated against those lessons. Selection for a task is recorded as
+Compile sees only existing skills and lessons from the just-completed batch. Each
+change must cite a current failed candidate; MERGE/REVISE may also cite evidence
+already attached to that target skill. Unknown or future IDs remain invalid.
+Selection for a task is recorded as
 full skill contents, so proving injection does not depend on a mutable library.
 
 Learning remains outside the portable agent core, matching Pi's separation of the

@@ -82,6 +82,36 @@ def test_official_report_requires_authoritative_evidence() -> None:
     assert interpret_report("task", {"empty_patch_ids": ["task"]}, None, "hash").status == "failed"
 
 
+def test_merge_accepts_existing_lineage_but_requires_new_failed_evidence() -> None:
+    old = lesson().model_copy(update={"evidence": ("run:failed-run", "official:old")})
+    add = Decision(
+        action="ADD",
+        id="procedure",
+        scope="general",
+        body="Old procedure",
+        run_ids=(old.run_id,),
+    )
+    current = apply_compilation(SkillSnapshot(), Compilation(decisions=(add,)), (old,))
+    new = old.model_copy(update={"run_id": "new-run", "evidence": ("run:new-run", "official:new")})
+    merge = add.model_copy(
+        update={
+            "action": "MERGE",
+            "body": "Updated procedure",
+            "run_ids": (old.run_id, new.run_id),
+        }
+    )
+    updated = apply_compilation(current, Compilation(decisions=(merge,)), (new,))
+    assert updated.skills[0].revision == 2
+    assert updated.skills[0].evidence == (*old.evidence, *new.evidence)
+    for refs in (("future-run", new.run_id), (old.run_id,)):
+        with pytest.raises(ValueError, match="unknown failed run or no current candidate"):
+            apply_compilation(
+                current,
+                Compilation(decisions=(merge.model_copy(update={"run_ids": refs}),)),
+                (new,),
+            )
+
+
 def make_run(task_id: str, snapshot: SkillSnapshot, status: str = "failed") -> TaskRun:
     return TaskRun(
         run_id=task_id,

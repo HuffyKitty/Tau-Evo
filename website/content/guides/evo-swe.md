@@ -74,8 +74,9 @@ Tasks within one batch all receive the snapshot captured at the batch start.
 Neither successes nor infrastructure errors generate lessons. The last batch
 does not learn, since this experiment has no subsequent tasks.
 
-Compile supports ADD, MERGE, REVISE, and SKIP. Its JSON must cite failed run IDs
-provided by the host. Unknown evidence, conflicting actions, invalid IDs, or
+Compile supports ADD, MERGE, REVISE, and SKIP. Each change must cite a current failed
+candidate. MERGE/REVISE may additionally cite the same target skill's existing
+evidence. Unknown evidence, conflicting actions, invalid IDs, or
 oversized libraries reject the entire candidate. A candidate is activated only
 in that arm's `experimental-skills` store with a compare-and-swap version check.
 This is experimental activation, not human review or held-out validation. Normal

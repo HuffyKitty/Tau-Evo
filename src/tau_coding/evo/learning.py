@@ -156,12 +156,20 @@ def apply_compilation(
         if decision.id in touched:
             raise ValueError("Duplicate compiler target")
         touched.add(decision.id)
-        if not decision.run_ids or not set(decision.run_ids).issubset(evidence):
-            raise ValueError("Compiler cited an unknown failed run")
         previous = skills.get(decision.id)
         if (decision.action == "ADD") == (previous is not None):
             raise ValueError("Compiler action conflicts with existing skill")
-        refs = tuple(dict.fromkeys(ref for run_id in decision.run_ids for ref in evidence[run_id]))
+        prior_ids = {
+            ref[4:] for ref in (previous.evidence if previous else ()) if ref.startswith("run:")
+        }
+        cited = set(decision.run_ids)
+        if not cited.intersection(evidence) or not cited.issubset(set(evidence) | prior_ids):
+            raise ValueError("Compiler cited an unknown failed run or no current candidate")
+        refs = tuple(
+            dict.fromkeys(
+                ref for run_id in decision.run_ids if run_id in evidence for ref in evidence[run_id]
+            )
+        )
         skills[decision.id] = SkillRevision(
             id=decision.id,
             revision=1 if previous is None else previous.revision + 1,
@@ -193,7 +201,9 @@ async def compile_lessons(
         "Return JSON {decisions: [{action: ADD|MERGE|REVISE|SKIP, id, scope: general|topic, "
         "triggers: [strings], body: string, run_ids: [source run IDs]}]}. "
         "ADD creates an ID; MERGE/REVISE replaces an existing body's complete text. "
-        "Only cite run IDs supplied in candidates. Keep at most 6 skills total and bodies concise. "
+        "Cite at least one run ID supplied in candidates. MERGE/REVISE may additionally cite "
+        "run IDs already in that target skill's evidence. "
+        "Keep at most 6 skills and bodies concise. "
         "Prefer merging redundant lessons. Topic triggers should match repository names. "
         "Do not include concrete fixes, task IDs, credentials or instructions to bypass verifiers.",
         json.dumps(
